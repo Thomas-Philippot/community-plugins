@@ -25,14 +25,10 @@ local function tr(key, args) return noctalia.tr("service." .. key, args) end
 -- Set the refresh interval
 noctalia.setUpdateInterval(refreshInterval * 1000)
 
-local function shellQuote(value)
-  return "'" .. tostring(value or ""):gsub("'", "'\\''") .. "'"
-end
-
 -- Determine scope flags
 local function scopeArgs()
-  if group ~= "" then return {PLATFORM_GROUP[platform], shellQuote(group)} end
-  if repo ~= "" then return {"--repo", shellQuote(repo)} end
+  if group ~= "" then return {PLATFORM_GROUP[platform], group} end
+  if repo ~= "" then return {"--repo", repo} end
   return {}
 end
 
@@ -63,7 +59,7 @@ local function ensureTeaContext(cb)
     return cb(nil)
   end
 
-  noctalia.runAsync("git -C " .. shellQuote(dir) .. " init --quiet", function(res)
+  noctalia.runAsync({"git", "-C", dir, "init", "--quiet"}, function(res)
     if res.exitCode ~= 0 then
       noctalia.log("[Git Companion] git init failed: " .. (res.stderr or ""))
       return cb(nil)
@@ -73,9 +69,14 @@ local function ensureTeaContext(cb)
   end)
 end
 
--- Run a tea invocation from the context repository.
+-- Run a tea invocation from the context repository. runAsync has no cwd
+-- option, so a fixed shell snippet changes directory and execs the rest; the
+-- directory and the tea argv ride along as positional parameters, never parsed
+-- by the shell.
 local function teaCommand(parts)
-  return "cd " .. shellQuote(teaContext) .. " && " .. table.concat(parts, " ")
+  local argv = {"sh", "-c", 'cd "$1" && shift && exec "$@"', "sh", teaContext}
+  for _, v in ipairs(parts) do table.insert(argv, v) end
+  return argv
 end
 
 local function buildCommand(kind)
@@ -91,14 +92,14 @@ local function buildCommand(kind)
     table.insert(parts, "list")
     if giteaLogin ~= "" then
       table.insert(parts, "--login")
-      table.insert(parts, shellQuote(giteaLogin))
+      table.insert(parts, giteaLogin)
     end
     table.insert(parts, "--kind")
     table.insert(parts, kind == "issue" and "issues" or "pulls")
     table.insert(parts, "--state")
     table.insert(parts, "open")
     table.insert(parts, "--author")
-    table.insert(parts, shellQuote(teaUser))
+    table.insert(parts, teaUser)
     table.insert(parts, "--fields")
     table.insert(parts, "index,title,url,state,owner,repo")
     table.insert(parts, "--output")
@@ -139,7 +140,7 @@ local function buildCommand(kind)
     table.insert(parts, "15")
     for _, v in ipairs(scopeArgs()) do table.insert(parts, v) end
   end
-  return table.concat(parts, " ")
+  return parts
 end
 
 -- Every item carries `mergeStatus`. Only GitLab fills it so far, from the
@@ -228,7 +229,7 @@ end
 
 local function fetchList(kind)
   local cmd = buildCommand(kind)
-  noctalia.log("[Git Companion] Running: " .. cmd)
+  noctalia.log("[Git Companion] Running: " .. table.concat(cmd, " "))
   noctalia.runAsync(cmd, function(res)
     -- The failure is reported next to the list rather than over it: the panel
     -- keeps showing what it last fetched. Carrying the CLI's own first line
@@ -261,7 +262,7 @@ local function setAvatar(avatarUrl)
 end
 
 local function fetchUser()
-  noctalia.runAsync(bin .. " api user", function(res)
+  noctalia.runAsync({bin, "api", "user"}, function(res)
     if res.exitCode ~= 0 then
       noctalia.log("[Git Companion] User fetch failed: " .. (res.stderr or ""))
       return

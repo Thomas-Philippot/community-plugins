@@ -18,6 +18,8 @@ local PLATFORM_GROUP = {
   gitea = "--owner",
 }
 
+local gitlab = require("./gitlab.luau")
+
 local bin = PLATFORM_BIN[platform] or PLATFORM_BIN.github
 
 local function tr(key, args) return noctalia.tr("service." .. key, args) end
@@ -194,6 +196,8 @@ end
 -- A hidden tab is never fetched, so its state is emptied instead of keeping a
 -- stale count the bar would still display.
 local function clearList(kind)
+  -- Re-enabling the tab then starts from a fresh, silent baseline.
+  if kind == "pr" then gitlab.resetMergeStatus() end
   noctalia.state.set(kind .. "s", {})
   noctalia.state.set(kind .. "s_count", 0)
 end
@@ -242,6 +246,7 @@ local function fetchList(kind)
       return
     end
     local list = processList(kind, res.stdout)
+    if platform == "gitlab" and kind == "pr" then gitlab.notifyMergeStatusChanges(list) end
     noctalia.state.set(kind .. "s", list) -- "issues" or "prs"
     noctalia.state.set(kind .. "s_count", #list)
     noctalia.state.set("last_update", noctalia.formatTime("%H:%M:%S"))
@@ -321,10 +326,15 @@ local function supportsKind(kind)
   return not (platform == "gitea" and kind == "review")
 end
 
+-- The last precondition failure that was notified. refresh() runs every tick,
+-- so a lasting failure would otherwise raise the same notification each time.
+local lastFailStatus = nil
+
 local function fetchEnabledLists()
   -- All preconditions met: the panel can render the lists. Individual fetch
   -- failures are logged per-list (see fetchList) and leave the previous list
   -- in place, so they don't flip this back.
+  lastFailStatus = nil
   noctalia.state.set("status", "ok")
   noctalia.state.set("error_detail", "")
 
@@ -346,7 +356,10 @@ end
 
 local function fail(status, args)
   noctalia.state.set("status", status)
-  noctalia.notifyError(tr("title"), tr(status, args))
+  if status ~= lastFailStatus then
+    lastFailStatus = status
+    noctalia.notifyError(tr("title"), tr(status, args))
+  end
   noctalia.log("[Git Companion] Error: " .. status)
 end
 

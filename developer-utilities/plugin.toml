@@ -1,0 +1,59 @@
+id = "tphilippot/developer-utilities"
+name = "Developer Utilities"
+version = "0.1.0"
+plugin_api = 43
+author = "thomas-philippot"
+license = "MIT"
+icon = "code"
+description = "Developer tools in a bar panel: paste or copy JSON and get it formatted, minified and foldable."
+tags = ["development", "bar", "panel", "utility"]
+
+# ── Settings ───────────────────────────────────────
+
+[[setting]]
+key = "read_clipboard_on_open"
+type = "bool"
+label_key = "settings.read_clipboard_on_open.label"
+description_key = "settings.read_clipboard_on_open.description"
+default = true
+
+# Indentation of the JSON written by Copy in Pretty mode. The view itself
+# always indents by one step per level.
+[[setting]]
+key = "indent"
+type = "select"
+label_key = "settings.indent.label"
+description_key = "settings.indent.description"
+default = "2"
+options = [
+  { value = "2", label_key = "settings.indent.options.2" },
+  { value = "4", label_key = "settings.indent.options.4" },
+  { value = "tab", label_key = "settings.indent.options.tab" }
+]
+
+[[setting]]
+key = "fold_depth"
+type = "int"
+label_key = "settings.fold_depth.label"
+description_key = "settings.fold_depth.description"
+default = 1
+min = 0
+max = 20
+
+# ── Entry files ────────────────────────────────────
+
+[[widget]]
+id = "widget"
+entry = "widget.luau"
+
+  [widget.actions]
+  left = "panel-toggle tphilippot/developer-utilities:panel"
+
+[[panel]]
+id = "panel"
+entry = "panel.luau"
+width = 760
+height = 560
+placement = "floating"
+position = "auto"
+open_near_click = true

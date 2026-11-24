@@ -1,0 +1,102 @@
+{
+  "widget": {
+    "tooltip": "Developer Utilities"
+  },
+  "panel": {
+    "title": "Developer Utilities",
+    "close": "Close",
+    "reload": "Reload",
+    "reload_tooltip": "Reload from the clipboard",
+    "coming_soon": "{tool} is coming soon.",
+    "source": {
+      "clipboard": "Clipboard",
+      "fixed": "Fixed"
+    },
+    "size": {
+      "bytes": "{n} B",
+      "kb": "{n} KB",
+      "mb": "{n} MB"
+    },
+    "tools": {
+      "json": {
+        "name": "JSON",
+        "short": "JSON"
+      },
+      "base64": {
+        "name": "Base64",
+        "short": "B64"
+      },
+      "url": {
+        "name": "URL encode / decode",
+        "short": "URL"
+      },
+      "time": {
+        "name": "Timestamp",
+        "short": "Time"
+      },
+      "jwt": {
+        "name": "JWT decode",
+        "short": "JWT"
+      },
+      "uuid": {
+        "name": "UUID",
+        "short": "UUID"
+      },
+      "base": {
+        "name": "Number base",
+        "short": "Base"
+      }
+    },
+    "json": {
+      "pretty": "Pretty",
+      "minify": "Minify",
+      "indent": {
+        "2": "2 spaces",
+        "4": "4 spaces",
+        "tab": "Tab"
+      },
+      "fold_all": "Fold all",
+      "unfold_all": "Unfold all",
+      "valid": "Valid JSON",
+      "copy": "Copy",
+      "copied": "Copied",
+      "working": "Formatting…",
+      "error": "Invalid JSON",
+      "error_at": "Invalid JSON at line {line}, column {col}",
+      "fix_comma": "Remove trailing comma",
+      "empty_title": "No JSON in the clipboard",
+      "empty_clipboard_empty": "The clipboard is empty. Copy some JSON, then reload.",
+      "empty_not_json": "The clipboard holds text that is not JSON. Copy some JSON, then reload.",
+      "keys": {
+        "one": "{count} key",
+        "other": "{count} keys"
+      },
+      "items": {
+        "one": "{count} item",
+        "other": "{count} items"
+      },
+      "too_large_title": "JSON too large",
+      "empty_too_large": "This JSON is {size}; the formatter handles up to {limit}.",
+      "invalid": "Invalid JSON"
+    }
+  },
+  "settings": {
+    "read_clipboard_on_open": {
+      "label": "Read the clipboard on open",
+      "description": "Format the clipboard content each time the panel opens."
+    },
+    "indent": {
+      "label": "Indentation",
+      "description": "Indentation of the JSON copied in Pretty mode.",
+      "options": {
+        "2": "2 spaces",
+        "4": "4 spaces",
+        "tab": "Tab"
+      }
+    },
+    "fold_depth": {
+      "label": "Fold depth",
+      "description": "Objects and arrays this deep or deeper start folded. 1 shows only the top-level keys, 0 keeps everything unfolded."
+    }
+  }
+}
